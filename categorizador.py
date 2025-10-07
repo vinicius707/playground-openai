@@ -4,39 +4,43 @@ import os
 
 load_dotenv()
 cliente = OpenAI(api_key=os.getenv("OPEN_AI_KEY"))
-prompt_sistema="""
-    Você é um categorizador de produtos.
-    Você deve assumir as categorias presentes na lista abaixo.
-    
-    # Lista de Categorias Válidas
-    - Moda Sustentável
-    - Produtos para o Lar
-    - Beleza Natural
-    - Eletrônicos Verdes
-    
-    # Formato de Saída
-    Produto: Nome do Produto
-    Categoria: apresente a categoria do produto
-    
-    # Exemplo de Saída
-    Produto: Escova elétrica com recarga solar
-    Categoria: Eletrônicos Verdes
-"""
 
-prompt_usuario = input("Apresente o nome de um produto: ")
+def categoriza_produto(nome_produto, lista_categorias_possiveis):
+    prompt_sistema= f"""
+        Você é um categorizador de produtos.
+        Você deve assumir as categorias presentes na lista abaixo.
+        
+        # Lista de Categorias Válidas
+        {lista_categorias_possiveis.split(",")}
+        
+        # Formato de Saída
+        Produto: Nome do Produto
+        Categoria: apresente a categoria do produto
+        
+        # Exemplo de Saída
+        Produto: Escova elétrica com recarga solar
+        Categoria: Eletrônicos Verdes
+    """
 
-resposta = cliente.chat.completions.create(
-    model="gpt-5-nano",
-    messages=[
-        {
-            "role":"system",
-            "content": prompt_sistema
-        },
-        {
-            "role":"user",
-            "content":prompt_usuario
-        }
-    ],
-)
+    resposta = cliente.chat.completions.create(
+        model="gpt-5-nano",
+        messages=[
+            {
+                "role":"system",
+                "content": prompt_sistema
+            },
+            {
+                "role":"user",
+                "content":nome_produto
+            }
+        ],
+    )
+    
+    return resposta.choices[0].message.content
 
-print(resposta.choices[0].message.content)
+categorias_validas = input("Informe as categorias válidas, separando por virgula: ")
+
+while True:
+    nome_produto = input("Digite o nome do produto: ")
+    texto_resposta = categoriza_produto(nome_produto, categorias_validas)
+    print(texto_resposta)
